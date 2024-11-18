@@ -1,0 +1,173 @@
+services:
+
+  caddy:
+    build: images/caddy
+    container_name: caddylocal
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+      - 2019:2019
+    networks:
+      - localnetwork
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+    restart: unless-stopped
+    environment:
+      - CADDY_DOCKER_PROXY_SERVICE_TASKS=true
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+      update_config:
+        parallelism: 1
+        delay: 60s
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  nginxlocal:
+    build: images/nginx
+    container_name: nginxlocal
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./projects:/var/www
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./config/nginx/sites:/etc/nginx/sites-available
+      - ./config/nginx/sites:/etc/nginx/sites-enabled
+    depends_on:
+      - phplocal
+    networks:
+      - localnetwork
+    labels:
+      caddy: "${DOMAIN}"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  phplocal:
+    build: images/php
+    container_name: phplocal
+    restart: always
+    expose:
+      - 9000
+      - 9003
+    volumes:
+      - ./projects:/var/www
+    environment:
+      XDEBUG_CONFIG: client_host=host.docker.internal
+    networks:
+      - localnetwork
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  mariadblocal:
+    image: mariadb
+    container_name: mariadblocal
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+        - localnetwork
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+      - ./config/mariadb:/etc/mysql/conf.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  # mysqllocal:
+  #   image: mysql:5.7
+  #   container_name: mysqllocal
+  #   restart: always
+  #   ports:
+  #     - 3306:3306
+  #   expose:
+  #     - 3306
+  #   networks:
+  #       - localnetwork
+  #   volumes:
+  #     - ./data/mysql/:/var/lib/mysql
+  #     - ./config/mysql/:/etc/mysql/conf.d/
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.1'
+  #         memory: 500M
+  #       reservations:
+  #         cpus: '0.1'
+  #         memory: 200M
+
+  myadminlocal:
+    container_name: myadminlocal
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    volumes:
+      - ./config/phpmyadmin/themes:/var/www/html/themes
+    depends_on:
+      - mariadblocal
+    networks:
+      - localnetwork
+    labels:
+      caddy: "pma.local"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOST: mariadblocal
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  # redislocal:
+  #   container_name: redislocal
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - 6379:6379
+  #   networks:
+  #     - localnetwork
+  #   volumes:
+  #     - redis:/data
+    # environment:
+    #   - REDIS_PASSWORD=redislocal
+  
+volumes:
+  redis:
+    driver: local
+
+networks:
+  localnetwork:
+    driver: bridge
