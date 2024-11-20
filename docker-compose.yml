@@ -132,6 +132,7 @@ services:
     restart: always
     volumes:
       - ./config/phpmyadmin/themes:/var/www/html/themes
+      - ./config/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
     depends_on:
       - mariadblocal
     networks:
