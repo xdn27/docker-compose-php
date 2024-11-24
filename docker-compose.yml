@@ -126,6 +126,28 @@ services:
   #         cpus: '0.1'
   #         memory: 200M
 
+  postgreslocal:
+    image: postgres
+    container_name: postgreslocal
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - localnetwork
+    environment:
+      POSTGRES_PASSWORD: root
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+  
+
   myadminlocal:
     container_name: myadminlocal
     image: phpmyadmin/phpmyadmin
@@ -151,6 +173,41 @@ services:
         reservations:
           cpus: '0.1'
           memory: 200M
+
+  adminerlocal:
+    image: adminer
+    restart: always
+    container_name: adminerlocal
+    volumes:
+      - ./config/adminer/plugins:/var/www/html/plugins-enabled
+    networks:
+      - localnetwork
+    labels:
+      caddy: "adminer.local"
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+
+  # pgadmin4local:
+  #   image: dpage/pgadmin4
+  #   container_name: pgadmin4local
+  #   networks:
+  #     - localnetwork
+  #   labels:
+  #     caddy: "pgadmin.local"
+  #     caddy.reverse_proxy: "{{upstreams 80}}"
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=27.idea@gmail.com
+  #     - PGADMIN_DEFAULT_PASSWORD=secretpostgres
+  #     - PGADMIN_DISABLE_POSTFIX=1
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         cpus: '0.1'
+  #         memory: 200M
 
   # redislocal:
   #   container_name: redislocal

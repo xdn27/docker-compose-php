@@ -26,7 +26,7 @@ for SUBDIR in $(find "$WWW_DIR" -maxdepth 1 -type d -not -name "projects" -not -
     # Create the entry in the /etc/hosts file
     echo "$IP_ADDRESS $SUBDIR_NAME.local" | tee -a /etc/hosts
   
-    if [ "$SUBDIR_NAME.local" != "pma.local" ]; then
+    if [ "$SUBDIR_NAME.local" != "pma.local" ] && [ "$SUBDIR_NAME.local" != "pgadmin.local" ] && [ "$SUBDIR_NAME.local" != "adminer.local" ]; then
       if [ -z "$DOMAINS" ]; then
           DOMAINS="$SUBDIR_NAME.local"
       else
