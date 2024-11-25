@@ -61,6 +61,7 @@ services:
     build: images/php
     container_name: phplocal
     restart: always
+    user: 1000:1000
     expose:
       - 9000
       - 9003

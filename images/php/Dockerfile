@@ -20,6 +20,11 @@ RUN docker-php-ext-install bz2
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 # RUN pecl install imagick && docker-php-ext-enable imagick
 
+# Install Postgre PDO
+RUN apt-get install -y libpq-dev \
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql
+
 #RUN groupadd -g 1001 developer
 #RUN useradd -u 1001 -g developer developer
 #RUN chown -R developer:developer /var/www
