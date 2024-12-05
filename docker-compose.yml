@@ -77,6 +77,27 @@ services:
           cpus: '0.1'
           memory: 200M
 
+  # phpworkerlocal:
+  #   build: images/php
+  #   container_name: phpworkerlocal
+  #   restart: always
+  #   user: root
+  #   volumes:
+  #     - ./projects:/var/www
+  #     - ./config/php/cron:/etc/cron.d
+  #     - ./config/php/supervisor/supervisord.conf:/etc/supervisor/supervisord.conf
+  #     - ./config/php/supervisor/supervisord-app.conf:/etc/supervisor/conf.d/app.conf
+  #   environment:
+  #     XDEBUG_CONFIG: client_host=host.docker.internal
+  #   networks:
+  #     - localnetwork
+  #   # command: /bin/bash -c "supervisord -c /etc/supervisor/supervisord.conf && cron && tail -f /dev/null"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         cpus: '0.1'
+  #         memory: 200M
+
   mariadblocal:
     image: mariadb
     container_name: mariadblocal

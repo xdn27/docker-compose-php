@@ -3,7 +3,7 @@ FROM php:8.3-fpm
 WORKDIR /var/www
 
 RUN apt-get update && \
-    apt-get install -y git libzip-dev zip libmcrypt-dev libicu-dev libpng-dev libmagickwand-dev libjpeg-dev libfreetype6-dev libjpeg62-turbo-dev libgd-dev libbz2-dev
+    apt-get install -y git libzip-dev zip libmcrypt-dev libicu-dev libpng-dev libmagickwand-dev libjpeg-dev libfreetype6-dev libjpeg62-turbo-dev libgd-dev libbz2-dev passwd
 
 # Install Composer.
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
@@ -25,9 +25,7 @@ RUN apt-get install -y libpq-dev \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
-#RUN groupadd -g 1001 developer
-#RUN useradd -u 1001 -g developer developer
-#RUN chown -R developer:developer /var/www
-RUN chmod -R 777 /var/www
-#COPY --chown=developer:developer . /var/www
-#USER developer
+RUN useradd -u 1000 dev
+RUN chown -R dev /var/www
+RUN mkdir /home/dev/
+RUN chown -R dev /home/dev/
