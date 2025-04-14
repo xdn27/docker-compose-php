@@ -22,8 +22,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: any
       update_config:
         parallelism: 1
         delay: 60s
@@ -35,7 +33,11 @@ services:
   nginxlocal:
     build: images/nginx
     container_name: nginxlocal
-    restart: always
+    restart: unless-stopped
+    # ports:
+    #   - 80:80
+    #   - 443:443
+    #   - 443:443/udp
     env_file:
       - .env
     volumes:
@@ -60,7 +62,7 @@ services:
   phplocal:
     build: images/php
     container_name: phplocal
-    restart: always
+    restart: unless-stopped
     user: 1000:1000
     expose:
       - 9000
@@ -105,7 +107,7 @@ services:
   mariadblocal:
     image: mariadb
     container_name: mariadblocal
-    restart: always
+    restart: unless-stopped
     ports:
       - 3306:3306
     networks:
@@ -152,32 +154,32 @@ services:
   #         cpus: '0.1'
   #         memory: 200M
 
-  postgreslocal:
-    image: postgres
-    container_name: postgreslocal
-    restart: always
-    ports:
-      - 5432:5432
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-    networks:
-      - localnetwork
-    environment:
-      POSTGRES_PASSWORD: root
-    deploy:
-      resources:
-        limits:
-          cpus: '0.1'
-          memory: 500M
-        reservations:
-          cpus: '0.1'
-          memory: 200M
+  # postgreslocal:
+  #   image: postgres
+  #   container_name: postgreslocal
+  #   restart: no
+  #   ports:
+  #     - 5432:5432
+  #   volumes:
+  #     - ./data/postgres:/var/lib/postgresql/data
+  #   networks:
+  #     - localnetwork
+  #   environment:
+  #     POSTGRES_PASSWORD: root
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.1'
+  #         memory: 500M
+  #       reservations:
+  #         cpus: '0.1'
+  #         memory: 200M
   
 
   myadminlocal:
     container_name: myadminlocal
     image: phpmyadmin/phpmyadmin
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./config/phpmyadmin/themes:/var/www/html/themes
       - ./config/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
@@ -200,22 +202,22 @@ services:
           cpus: '0.1'
           memory: 200M
 
-  adminerlocal:
-    image: adminer
-    restart: always
-    container_name: adminerlocal
-    volumes:
-      - ./config/adminer/plugins:/var/www/html/plugins-enabled
-    networks:
-      - localnetwork
-    labels:
-      caddy: "adminer.local"
-      caddy.reverse_proxy: "{{upstreams 8080}}"
-    deploy:
-      resources:
-        reservations:
-          cpus: '0.1'
-          memory: 200M
+  # adminerlocal:
+  #   image: adminer
+  #   restart: no
+  #   container_name: adminerlocal
+  #   volumes:
+  #     - ./config/adminer/plugins:/var/www/html/plugins-enabled
+  #   networks:
+  #     - localnetwork
+  #   labels:
+  #     caddy: "adminer.local"
+  #     caddy.reverse_proxy: "{{upstreams 8080}}"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         cpus: '0.1'
+  #         memory: 200M
 
   # pgadmin4local:
   #   image: dpage/pgadmin4
